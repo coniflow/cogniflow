@@ -5,8 +5,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  basePath: '/cogniflow',
-  assetPrefix: '/cogniflow/',
+  basePath: '',
+  assetPrefix: '',
   trailingSlash: true,
 };
 
