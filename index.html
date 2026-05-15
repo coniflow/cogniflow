@@ -1,41 +1,899 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CogniFlow - Your AI Second Brain</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CogniFlow — Your Private AI Second Brain</title>
+  <meta name="description" content="A beautiful, privacy-first AI second brain that captures, connects, and amplifies your thoughts. All processing is local and secure." />
+  <meta name="keywords" content="AI, second brain, notes, knowledge graph, privacy, productivity, local AI" />
+  <meta property="og:title" content="CogniFlow — Your Private AI Second Brain" />
+  <meta property="og:description" content="A beautiful, privacy-first AI second brain that captures, connects, and amplifies your thoughts." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://cogniflow.ai" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="CogniFlow — Your Private AI Second Brain" />
+  <meta name="twitter:description" content="A beautiful, privacy-first AI second brain that captures, connects, and amplifies your thoughts." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237C3AED'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='white' font-family='system-ui' font-weight='bold'>CF</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', system-ui, sans-serif; }
-    .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); }
-  </style>
+  <link rel="stylesheet" href="style.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            primary: '#7C3AED',
+            accent: '#06B6D4',
+          },
+        },
+      },
+    };
+  </script>
 </head>
-<body class="bg-zinc-950 text-white">
-  <div class="min-h-screen">
-    <!-- Hero -->
-    <section class="py-24 text-center px-6">
-      <h1 class="text-6xl font-bold mb-6">CogniFlow</h1>
-      <p class="text-3xl text-zinc-400 mb-8">Your Personal AI Second Brain</p>
-      <p class="text-xl max-w-2xl mx-auto text-zinc-500 mb-12">
-        Capture thoughts instantly • AI organizes everything • Beautiful knowledge graph
-      </p>
-      
-      <div class="flex gap-4 justify-center">
-        <a href="https://github.com/coniflow/cogniflow/releases" 
-           class="bg-white text-black px-8 py-4 rounded-2xl font-semibold text-lg hover:bg-zinc-200 transition">
-          ⬇️ Download for Windows
+<body class="bg-[#0a0a0f] text-white font-sans antialiased overflow-x-hidden">
+  <!-- Loader -->
+  <div id="loader">
+    <div class="loader-ring"></div>
+  </div>
+
+  <!-- Particle Canvas -->
+  <canvas id="particles-canvas"></canvas>
+
+  <!-- Ambient Glow Orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- ===== NAVBAR ===== -->
+  <header id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 sm:h-20">
+        <a href="#" class="flex items-center gap-3 group">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="shrink-0">
+            <rect width="36" height="36" rx="10" fill="url(#logogradient)"/>
+            <path d="M18 10C15.5 10 13.5 11.5 13.5 14C13.5 15.5 14.5 16.8 16 17.3C14.5 18 13.5 19.5 13.5 21C13.5 23.5 15.5 25 18 25C20.5 25 22.5 23.5 22.5 21C22.5 19.5 21.5 18 20 17.3C21.5 16.8 22.5 15.5 22.5 14C22.5 11.5 20.5 10 18 10Z" fill="white" opacity="0.9"/>
+            <circle cx="18" cy="14" r="2" fill="white"/>
+            <circle cx="18" cy="21" r="2" fill="white"/>
+            <circle cx="13" cy="17.5" r="1.5" fill="white"/>
+            <circle cx="23" cy="17.5" r="1.5" fill="white"/>
+            <defs>
+              <linearGradient id="logogradient" x1="0" y1="0" x2="36" y2="36">
+                <stop stop-color="#3B82F6"/>
+                <stop offset="1" stop-color="#1D4ED8"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="hidden sm:block">
+            <span class="text-sm font-semibold text-white/90">CogniFlow</span>
+            <span class="block text-[10px] text-white/40 font-medium tracking-tight">your private ai second brain 2026</span>
+          </div>
         </a>
-        <a href="https://github.com/coniflow/cogniflow" 
-           class="border border-white px-8 py-4 rounded-2xl font-semibold text-lg hover:bg-white/10 transition">
-          View Source Code
+
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="#features" class="nav-link text-sm">Features</a>
+          <a href="#graph" class="nav-link text-sm">Knowledge Graph</a>
+          <a href="#focus" class="nav-link text-sm">Focus Mode</a>
+          <a href="#testimonials" class="nav-link text-sm">Testimonials</a>
+          <a href="#download" class="nav-link text-sm">Download</a>
+        </nav>
+
+        <div class="hidden md:flex items-center gap-3">
+          <a href="#download" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-[#7C3AED] to-[#06B6D4] hover:opacity-90 transition-all duration-300 shadow-lg shadow-[#7C3AED]/20 btn-premium">
+            Get Started
+          </a>
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button id="menu-toggle" class="md:hidden p-2 text-white/60 hover:text-white transition-colors" aria-label="Toggle menu">
+          <svg id="menu-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile Menu -->
+      <div id="mobile-menu" class="md:hidden overflow-hidden max-h-0 opacity-0 transition-all duration-400 ease-in-out">
+        <div class="glass-strong rounded-2xl p-4 mb-4 space-y-1">
+          <a href="#features" class="block px-4 py-3 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/5 transition-all" onclick="closeMenu()">Features</a>
+          <a href="#graph" class="block px-4 py-3 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/5 transition-all" onclick="closeMenu()">Knowledge Graph</a>
+          <a href="#focus" class="block px-4 py-3 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/5 transition-all" onclick="closeMenu()">Focus Mode</a>
+          <a href="#testimonials" class="block px-4 py-3 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/5 transition-all" onclick="closeMenu()">Testimonials</a>
+          <a href="#download" class="block px-4 py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-[#7C3AED] to-[#06B6D4] mt-2 text-center" onclick="closeMenu()">Get Started</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== HERO ===== -->
+  <section class="relative min-h-screen flex items-center justify-center pt-24 pb-16 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+      <!-- Logo -->
+      <div class="hero-logo mb-10 inline-block">
+        <div class="relative">
+          <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="mx-auto">
+            <rect width="120" height="120" rx="28" fill="url(#heroLogoGrad)"/>
+            <rect width="120" height="120" rx="28" fill="url(#heroLogoGlow)" opacity="0.5"/>
+            <path d="M60 28C46 28 36 37 36 48C36 52 38 57 42 60C36 64 34 70 34 76C34 87 46 96 60 96C74 96 86 87 86 76C86 70 84 64 78 60C82 57 84 52 84 48C84 37 74 28 60 28Z" fill="white" opacity="0.9"/>
+            <circle cx="60" cy="44" r="8" fill="url(#heroLogoGrad)"/>
+            <circle cx="60" cy="76" r="8" fill="url(#heroLogoGrad)"/>
+            <circle cx="40" cy="60" r="6" fill="url(#heroLogoGrad)"/>
+            <circle cx="80" cy="60" r="6" fill="url(#heroLogoGrad)"/>
+            <defs>
+              <linearGradient id="heroLogoGrad" x1="0" y1="0" x2="120" y2="120">
+                <stop stop-color="#3B82F6"/>
+                <stop offset="1" stop-color="#1D4ED8"/>
+              </linearGradient>
+              <radialGradient id="heroLogoGlow" cx="0.5" cy="0.5" r="0.5">
+                <stop stop-color="#60A5FA" stop-opacity="0.4"/>
+                <stop offset="1" stop-color="#1D4ED8" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+          </svg>
+          <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] sm:text-xs font-medium tracking-tight text-white/30">
+            your private ai second brain 2026
+          </div>
+        </div>
+      </div>
+
+      <!-- Headline -->
+      <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-[0.95] tracking-tight mb-6 animate-fade-in">
+        <span class="text-white">Your Private</span><br />
+        <span class="gradient-text">AI Second Brain</span>
+      </h1>
+
+      <p class="text-base sm:text-lg md:text-xl text-white/40 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+        A stunning, privacy-first desktop app that captures your ideas, connects them
+        with local AI, and helps you think better. <span class="text-white/60 font-medium">All on your machine.</span>
+      </p>
+
+      <!-- Download Buttons -->
+      <div class="flex flex-wrap items-center justify-center gap-4 mb-8">
+        <a href="#download" class="download-btn download-btn-primary btn-premium group">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+          <span class="flex flex-col items-start leading-tight">
+            <span class="text-[10px] font-normal opacity-70">Download for</span>
+            <span class="text-sm font-semibold">Windows</span>
+          </span>
+        </a>
+        <a href="#download" class="download-btn download-btn-primary btn-premium group">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          <span class="flex flex-col items-start leading-tight">
+            <span class="text-[10px] font-normal opacity-70">Download for</span>
+            <span class="text-sm font-semibold">macOS</span>
+          </span>
+        </a>
+        <a href="#download" class="download-btn download-btn-secondary btn-premium">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+          <span class="flex flex-col items-start leading-tight">
+            <span class="text-[10px] font-normal opacity-70">Download for</span>
+            <span class="text-sm font-semibold">Linux</span>
+          </span>
         </a>
       </div>
-    </section>
 
-    <div class="text-center text-zinc-500 text-sm py-8">
-      Made with ❤️ for thinkers, creators, and knowledge workers
+      <div class="flex items-center justify-center gap-3 text-sm">
+        <a href="https://github.com/cogniflow/cogniflow" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white/50 hover:text-white border border-white/10 hover:border-white/20 transition-all text-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View Source on GitHub
+        </a>
+      </div>
+
+      <!-- Stats row -->
+      <div class="mt-16 flex flex-wrap items-center justify-center gap-8 sm:gap-12 text-center">
+        <div>
+          <div class="text-2xl sm:text-3xl font-bold gradient-text">100%</div>
+          <div class="text-xs text-white/30 mt-1">Private & Local</div>
+        </div>
+        <div>
+          <div class="text-2xl sm:text-3xl font-bold gradient-text">Free</div>
+          <div class="text-xs text-white/30 mt-1">Open Source</div>
+        </div>
+        <div>
+          <div class="text-2xl sm:text-3xl font-bold gradient-text">Local AI</div>
+          <div class="text-xs text-white/30 mt-1">Ollama Powered</div>
+        </div>
+      </div>
+
+      <!-- Scroll indicator -->
+      <div class="mt-20">
+        <a href="#features" class="inline-flex flex-col items-center gap-2 text-white/20 hover:text-white/40 transition-colors">
+          <span class="text-xs tracking-widest uppercase">Scroll</span>
+          <svg width="16" height="24" viewBox="0 0 16 24" class="animate-bounce"><rect x="1" y="1" width="14" height="22" rx="7" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
+        </a>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <!-- ===== FEATURES ===== -->
+  <section id="features" class="relative py-24 sm:py-32">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="text-center mb-16 reveal">
+        <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06] text-xs text-white/50 mb-4">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#7C3AED]"></span>
+          Features
+        </span>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+          Everything You Need to
+          <span class="gradient-text"> Think Better</span>
+        </h2>
+        <p class="text-white/40 max-w-2xl mx-auto text-base sm:text-lg font-light">
+          Capture, connect, and reflect on your ideas with powerful tools that work together seamlessly.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Feature 1 -->
+        <div class="glass-card rounded-2xl p-6 reveal reveal-delay-1 group">
+          <div class="icon-container bg-gradient-to-br from-[#7C3AED]/20 to-[#7C3AED]/5 border border-[#7C3AED]/10 mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="1.5" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+          <h3 class="text-base font-semibold mb-2">Quick Capture</h3>
+          <p class="text-sm text-white/40 leading-relaxed">Press <kbd class="px-1.5 py-0.5 rounded bg-white/5 text-xs font-mono">Ctrl+Shift+C</kbd> anywhere to instantly capture thoughts, voice, or screenshots.</p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="glass-card rounded-2xl p-6 reveal reveal-delay-2 group">
+          <div class="icon-container bg-gradient-to-br from-[#06B6D4]/20 to-[#06B6D4]/5 border border-[#06B6D4]/10 mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round"><path d="M9.5 2A2.5 2.5 0 0112 4.5V15"/><path d="M14.5 2A2.5 2.5 0 0117 4.5v5.5"/><path d="M19.5 7A2.5 2.5 0 0122 9.5v7.72"/><path d="M4.5 10A2.5 2.5 0 017 12.5v6"/><path d="M2 22h20"/></svg>
+          </div>
+          <h3 class="text-base font-semibold mb-2">AI Processing</h3>
+          <p class="text-sm text-white/40 leading-relaxed">Local AI summarizes, tags, and extracts entities from your notes. Private and fast.</p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="glass-card rounded-2xl p-6 reveal reveal-delay-3 group">
+          <div class="icon-container bg-gradient-to-br from-[#7C3AED]/20 to-[#7C3AED]/5 border border-[#7C3AED]/10 mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="1.5" stroke-linecap="round"><circle cx="5" cy="6" r="3"/><circle cx="19" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><line x1="8" y1="8" x2="10" y2="16"/><line x1="16" y1="8" x2="14" y2="16"/><line x1="7.5" y1="7.5" x2="16.5" y2="7.5"/></svg>
+          </div>
+          <h3 class="text-base font-semibold mb-2">Knowledge Graph</h3>
+          <p class="text-sm text-white/40 leading-relaxed">Interactive graph showing connections between notes, tags, and concepts.</p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="glass-card rounded-2xl p-6 reveal reveal-delay-4 group">
+          <div class="icon-container bg-gradient-to-br from-[#06B6D4]/20 to-[#06B6D4]/5 border border-[#06B6D4]/10 mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <h3 class="text-base font-semibold mb-2">Focus Mode</h3>
+          <p class="text-sm text-white/40 leading-relaxed">Pomodoro timer with ambient sounds and optional website blocker.</p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="glass-card rounded-2xl p-6 reveal reveal-delay-1 group">
+          <div class="icon-container bg-gradient-to-br from-[#7C3AED]/20 to-[#7C3AED]/5 border border-[#7C3AED]/10 mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <h3 class="text-base font-semibold mb-2">Semantic Search</h3>
+          <p class="text-sm text-white/40 leading-relaxed">AI-powered semantic search across all your notes. Find what you need instantly.</p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="glass-card rounded-2xl p-6 reveal reveal-delay-2 group">
+          <div class="icon-container bg-gradient-to-br from-[#06B6D4]/20 to-[#06B6D4]/5 border border-[#06B6D4]/10 mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </div>
+          <h3 class="text-base font-semibold mb-2">Voice Recording</h3>
+          <p class="text-sm text-white/40 leading-relaxed">Record voice notes that get transcribed and processed automatically.</p>
+        </div>
+
+        <!-- Feature 7 -->
+        <div class="glass-card rounded-2xl p-6 reveal reveal-delay-3 group">
+          <div class="icon-container bg-gradient-to-br from-[#7C3AED]/20 to-[#7C3AED]/5 border border-[#7C3AED]/10 mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="1.5" stroke-linecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <h3 class="text-base font-semibold mb-2">Screenshot OCR</h3>
+          <p class="text-sm text-white/40 leading-relaxed">Capture screenshots and extract text. Save visual info as searchable notes.</p>
+        </div>
+
+        <!-- Feature 8 -->
+        <div class="glass-card rounded-2xl p-6 reveal reveal-delay-4 group">
+          <div class="icon-container bg-gradient-to-br from-[#06B6D4]/20 to-[#06B6D4]/5 border border-[#06B6D4]/10 mb-4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+          </div>
+          <h3 class="text-base font-semibold mb-2">100% Private</h3>
+          <p class="text-sm text-white/40 leading-relaxed">Everything runs locally. SQLite database, local AI, no cloud dependency.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== KNOWLEDGE GRAPH ===== -->
+  <section id="graph" class="relative py-24 sm:py-32">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="reveal">
+          <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06] text-xs text-white/50 mb-4">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#06B6D4]"></span>
+            Visual Thinking
+          </span>
+          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+            See Your Ideas
+            <span class="gradient-text">Come Alive</span>
+          </h2>
+          <p class="text-white/40 text-base sm:text-lg mb-8 font-light leading-relaxed">
+            The interactive knowledge graph visualizes connections between your notes,
+            making it easy to discover new relationships and insights you never noticed before.
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-[#7C3AED]"></span>
+              <span class="text-sm text-white/60">Notes</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-[#06B6D4]"></span>
+              <span class="text-sm text-white/60">Tags</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-[#F59E0B]"></span>
+              <span class="text-sm text-white/60">Entities</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-[#10B981]"></span>
+              <span class="text-sm text-white/60">Connections</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="reveal reveal-delay-2">
+          <div class="glass-strong rounded-2xl p-1 neon-glow-strong">
+            <div class="aspect-[4/3] rounded-xl bg-gradient-to-br from-[#7C3AED]/5 via-[#0a0a0f] to-[#06B6D4]/5 relative overflow-hidden">
+              <!-- Animated Graph SVG -->
+              <svg viewBox="0 0 400 300" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                <!-- Connection lines -->
+                <line x1="200" y1="60" x2="100" y2="150" stroke="rgba(124,58,237,0.2)" stroke-width="2" class="graph-edge"/>
+                <line x1="200" y1="60" x2="310" y2="120" stroke="rgba(6,182,212,0.2)" stroke-width="2" class="graph-edge" style="animation-delay: 0.3s"/>
+                <line x1="200" y1="60" x2="240" y2="220" stroke="rgba(245,158,11,0.2)" stroke-width="2" class="graph-edge" style="animation-delay: 0.6s"/>
+                <line x1="200" y1="60" x2="130" y2="230" stroke="rgba(16,185,129,0.2)" stroke-width="2" class="graph-edge" style="animation-delay: 0.9s"/>
+                <line x1="100" y1="150" x2="310" y2="120" stroke="rgba(255,255,255,0.05)" stroke-width="1.5"/>
+                <line x1="240" y1="220" x2="130" y2="230" stroke="rgba(255,255,255,0.05)" stroke-width="1.5"/>
+                <line x1="100" y1="150" x2="130" y2="230" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                <line x1="310" y1="120" x2="240" y2="220" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+                <line x1="200" y1="60" x2="200" y2="60" stroke="rgba(124,58,237,0.3)" stroke-width="2"/>
+
+                <!-- Central Node -->
+                <g class="graph-node">
+                  <rect x="160" y="35" width="80" height="32" rx="16" fill="rgba(124,58,237,0.2)" stroke="rgba(124,58,237,0.4)" stroke-width="1.5"/>
+                  <text x="200" y="55" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-size="11" font-family="Inter, sans-serif" font-weight="600">Project Alpha</text>
+                </g>
+
+                <!-- Node 1 -->
+                <g class="graph-node" style="animation-delay: 0.5s">
+                  <rect x="45" y="130" width="110" height="28" rx="14" fill="rgba(6,182,212,0.15)" stroke="rgba(6,182,212,0.3)" stroke-width="1"/>
+                  <text x="100" y="148" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10" font-family="Inter, sans-serif">Machine Learning</text>
+                </g>
+
+                <!-- Node 2 -->
+                <g class="graph-node" style="animation-delay: 1s">
+                  <rect x="260" y="100" width="100" height="28" rx="14" fill="rgba(124,58,237,0.15)" stroke="rgba(124,58,237,0.3)" stroke-width="1"/>
+                  <text x="310" y="118" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10" font-family="Inter, sans-serif">System Design</text>
+                </g>
+
+                <!-- Node 3 -->
+                <g class="graph-node" style="animation-delay: 1.5s">
+                  <rect x="195" y="200" width="90" height="28" rx="14" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+                  <text x="240" y="218" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10" font-family="Inter, sans-serif">Team Sync</text>
+                </g>
+
+                <!-- Node 4 -->
+                <g class="graph-node" style="animation-delay: 2s">
+                  <rect x="90" y="212" width="80" height="28" rx="14" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+                  <text x="130" y="230" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10" font-family="Inter, sans-serif">Strategy</text>
+                </g>
+
+                <!-- Connection label -->
+                <rect x="155" y="135" width="72" height="20" rx="10" fill="rgba(124,58,237,0.1)" stroke="rgba(124,58,237,0.2)" stroke-width="0.5" opacity="0.7"/>
+                <text x="191" y="149" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="8" font-family="Inter, sans-serif">AI suggests</text>
+              </svg>
+
+              <!-- Stats overlay -->
+              <div class="absolute bottom-3 right-3 flex gap-2">
+                <span class="px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/5 text-[10px] text-white/40">47 nodes</span>
+                <span class="px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/5 text-[10px] text-white/40">128 connections</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOCUS MODE ===== -->
+  <section id="focus" class="relative py-24 sm:py-32">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="reveal order-2 lg:order-1">
+          <div class="glass-strong rounded-2xl p-8 neon-glow-strong mx-auto max-w-sm">
+            <div class="flex flex-col items-center">
+              <!-- Pomodoro Ring -->
+              <div class="relative mb-6">
+                <svg width="200" height="200" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="4"/>
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="url(#focusRingGrad)" stroke-width="4" stroke-linecap="round"
+                    stroke-dasharray="326" stroke-dashoffset="100" transform="rotate(-90 60 60)" class="pomodoro-ring"/>
+                  <defs>
+                    <linearGradient id="focusRingGrad" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#7C3AED"/>
+                      <stop offset="100%" stop-color="#06B6D4"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="text-center">
+                    <div class="text-4xl sm:text-5xl font-bold tabular-nums tracking-tight">25:00</div>
+                    <div class="text-xs text-white/30 mt-1">Session 1 of 4</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Dots indicator -->
+              <div class="flex gap-2 mb-6">
+                <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-[#7C3AED] to-[#06B6D4]"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-white/10"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-white/10"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-white/10"></span>
+              </div>
+
+              <div class="flex gap-3">
+                <button class="px-8 py-3 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#06B6D4] text-white font-semibold text-sm hover:opacity-90 transition-all shadow-lg shadow-[#7C3AED]/20 btn-premium">
+                  Start Focus
+                </button>
+                <button class="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-white/50"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="reveal reveal-delay-2 order-1 lg:order-2">
+          <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06] text-xs text-white/50 mb-4">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#7C3AED]"></span>
+            Deep Work
+          </span>
+          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+            Enter <span class="gradient-text">Flow State</span>
+          </h2>
+          <p class="text-white/40 text-base sm:text-lg mb-8 font-light leading-relaxed">
+            Focus mode combines a Pomodoro timer with ambient sounds and a
+            distraction-free environment. Block distracting sites, play calming sounds,
+            and track your deep work sessions.
+          </p>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span class="text-sm text-white/60">Pomodoro</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              <span class="text-sm text-white/60">Ambient Sounds</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              <span class="text-sm text-white/60">Site Blocker</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/></svg>
+              <span class="text-sm text-white/60">Stats Tracking</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TESTIMONIALS ===== -->
+  <section id="testimonials" class="relative py-24 sm:py-32">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="text-center mb-16 reveal">
+        <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06] text-xs text-white/50 mb-4">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#06B6D4]"></span>
+          Testimonials
+        </span>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+          Loved by <span class="gradient-text">Thinkers</span>
+        </h2>
+        <p class="text-white/40 max-w-2xl mx-auto text-base sm:text-lg font-light">
+          Join thousands of users transforming their thinking workflow.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Testimonial 1 -->
+        <div class="testimonial-card glass-card rounded-2xl p-6 reveal reveal-delay-1">
+          <div class="flex gap-1 mb-4">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <p class="text-sm text-white/60 leading-relaxed mb-4">
+            &ldquo;CogniFlow completely changed how I organize my thoughts. The knowledge graph helps me see connections I never noticed before.&rdquo;
+          </p>
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#06B6D4] flex items-center justify-center text-sm font-semibold">SC</span>
+            <div>
+              <div class="text-sm font-medium">Sarah Chen</div>
+              <div class="text-xs text-white/30">Product Designer</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial 2 -->
+        <div class="testimonial-card glass-card rounded-2xl p-6 reveal reveal-delay-2">
+          <div class="flex gap-1 mb-4">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <p class="text-sm text-white/60 leading-relaxed mb-4">
+            &ldquo;The privacy-first approach is exactly what I needed. Local AI processing means I can use it for sensitive work notes without worry.&rdquo;
+          </p>
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-full bg-gradient-to-br from-[#06B6D4] to-[#7C3AED] flex items-center justify-center text-sm font-semibold">MJ</span>
+            <div>
+              <div class="text-sm font-medium">Marcus Johnson</div>
+              <div class="text-xs text-white/30">Software Engineer</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial 3 -->
+        <div class="testimonial-card glass-card rounded-2xl p-6 reveal reveal-delay-3">
+          <div class="flex gap-1 mb-4">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <p class="text-sm text-white/60 leading-relaxed mb-4">
+            &ldquo;As a researcher, the ability to capture and connect ideas is invaluable. The AI auto-tagging saves me hours each week.&rdquo;
+          </p>
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#06B6D4] flex items-center justify-center text-sm font-semibold">ER</span>
+            <div>
+              <div class="text-sm font-medium">Emily Rodriguez</div>
+              <div class="text-xs text-white/30">PhD Researcher</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DOWNLOAD ===== -->
+  <section id="download" class="relative py-24 sm:py-32">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="text-center mb-12 reveal">
+        <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.06] text-xs text-white/50 mb-4">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#7C3AED]"></span>
+          Get Started
+        </span>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+          Download <span class="gradient-text">CogniFlow</span>
+        </h2>
+        <p class="text-white/40 max-w-xl mx-auto text-base sm:text-lg font-light">
+          Available for all platforms. Free and open source.
+        </p>
+      </div>
+
+      <div class="max-w-3xl mx-auto">
+        <div class="glass-strong rounded-2xl p-8 neon-glow reveal">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <!-- Windows -->
+            <a href="#" class="download-btn-primary rounded-2xl p-5 text-center flex flex-col items-center gap-3 btn-premium group">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" class="opacity-80 group-hover:opacity-100 transition-opacity"><path d="M3 3h8.4v8.4H3V3zm9.6 0H21v8.4h-8.4V3zM3 12.6h8.4V21H3v-8.4zm9.6 0H21V21h-8.4v-8.4z"/></svg>
+              <div>
+                <div class="text-sm font-semibold">Windows</div>
+                <div class="text-xs text-white/40 mt-0.5">.exe installer</div>
+              </div>
+            </a>
+
+            <!-- macOS -->
+            <a href="#" class="download-btn-primary rounded-2xl p-5 text-center flex flex-col items-center gap-3 btn-premium group">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" class="opacity-80 group-hover:opacity-100 transition-opacity"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+              <div>
+                <div class="text-sm font-semibold">macOS</div>
+                <div class="text-xs text-white/40 mt-0.5">.dmg</div>
+              </div>
+            </a>
+
+            <!-- Linux -->
+            <a href="#" class="download-btn-primary rounded-2xl p-5 text-center flex flex-col items-center gap-3 btn-premium group">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" class="opacity-80 group-hover:opacity-100 transition-opacity"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+              <div>
+                <div class="text-sm font-semibold">Linux</div>
+                <div class="text-xs text-white/40 mt-0.5">.AppImage / .deb</div>
+              </div>
+            </a>
+          </div>
+
+          <div class="text-center">
+            <a href="https://github.com/cogniflow/cogniflow" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-sm text-white/60 hover:text-white">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+              View Source on GitHub
+            </a>
+          </div>
+        </div>
+
+        <div class="mt-8 text-center reveal">
+          <div class="flex items-center justify-center gap-6 text-xs text-white/30">
+            <span class="flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#10B981"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+              No account required
+            </span>
+            <span class="flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#10B981"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+              100% offline capable
+            </span>
+            <span class="flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#10B981"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+              Open source (MIT)
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="relative border-t border-white/[0.04] py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+        <div class="col-span-2 md:col-span-1">
+          <a href="#" class="flex items-center gap-2.5 mb-4">
+            <svg width="32" height="32" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="36" height="36" rx="10" fill="url(#footerLogo)"/>
+              <path d="M18 10C15.5 10 13.5 11.5 13.5 14C13.5 15.5 14.5 16.8 16 17.3C14.5 18 13.5 19.5 13.5 21C13.5 23.5 15.5 25 18 25C20.5 25 22.5 23.5 22.5 21C22.5 19.5 21.5 18 20 17.3C21.5 16.8 22.5 15.5 22.5 14C22.5 11.5 20.5 10 18 10Z" fill="white" opacity="0.9"/>
+              <defs>
+                <linearGradient id="footerLogo" x1="0" y1="0" x2="36" y2="36">
+                  <stop stop-color="#3B82F6"/><stop offset="1" stop-color="#1D4ED8"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div>
+              <div class="text-sm font-semibold text-white/90">CogniFlow</div>
+              <div class="text-[9px] text-white/30">your private ai second brain 2026</div>
+            </div>
+          </a>
+          <p class="text-xs text-white/30 leading-relaxed max-w-xs">
+            A privacy-first AI second brain. Capture, connect, and amplify your thoughts — all locally.
+          </p>
+        </div>
+        <div>
+          <h4 class="text-xs font-semibold text-white/50 uppercase tracking-wider mb-4">Product</h4>
+          <ul class="space-y-2.5">
+            <li><a href="#features" class="text-sm text-white/30 hover:text-white/60 transition-colors">Features</a></li>
+            <li><a href="#graph" class="text-sm text-white/30 hover:text-white/60 transition-colors">Knowledge Graph</a></li>
+            <li><a href="#focus" class="text-sm text-white/30 hover:text-white/60 transition-colors">Focus Mode</a></li>
+            <li><a href="#download" class="text-sm text-white/30 hover:text-white/60 transition-colors">Download</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-xs font-semibold text-white/50 uppercase tracking-wider mb-4">Resources</h4>
+          <ul class="space-y-2.5">
+            <li><a href="#" class="text-sm text-white/30 hover:text-white/60 transition-colors">Documentation</a></li>
+            <li><a href="#" class="text-sm text-white/30 hover:text-white/60 transition-colors">GitHub</a></li>
+            <li><a href="#" class="text-sm text-white/30 hover:text-white/60 transition-colors">API Reference</a></li>
+            <li><a href="#" class="text-sm text-white/30 hover:text-white/60 transition-colors">Blog</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-xs font-semibold text-white/50 uppercase tracking-wider mb-4">Company</h4>
+          <ul class="space-y-2.5">
+            <li><a href="#" class="text-sm text-white/30 hover:text-white/60 transition-colors">About</a></li>
+            <li><a href="#" class="text-sm text-white/30 hover:text-white/60 transition-colors">Privacy</a></li>
+            <li><a href="#" class="text-sm text-white/30 hover:text-white/60 transition-colors">Terms</a></li>
+            <li><a href="#" class="text-sm text-white/30 hover:text-white/60 transition-colors">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-white/[0.04] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-xs text-white/20">&copy; 2026 CogniFlow. Open source under MIT license.</p>
+        <div class="flex items-center gap-4">
+          <a href="https://github.com/cogniflow/cogniflow" target="_blank" rel="noopener noreferrer" class="text-white/20 hover:text-white/40 transition-colors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          </a>
+          <a href="#" class="text-white/20 hover:text-white/40 transition-colors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+          </a>
+        </div>
+        <p class="text-xs text-white/20">Made with ❤️ for thinkers everywhere.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ===== Loader =====
+    window.addEventListener('load', () => {
+      document.getElementById('loader').classList.add('hidden');
+    });
+
+    // ===== Particles =====
+    (function initParticles() {
+      const canvas = document.getElementById('particles-canvas');
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+      let mouseX = -1000;
+      let mouseY = -1000;
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      class Particle {
+        constructor() {
+          this.reset();
+        }
+        reset() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = Math.random() * 2 + 0.5;
+          this.speedX = (Math.random() - 0.5) * 0.3;
+          this.speedY = (Math.random() - 0.5) * 0.3;
+          this.opacity = Math.random() * 0.5 + 0.1;
+        }
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+          if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+          if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+
+          // Mouse interaction
+          const dx = this.x - mouseX;
+          const dy = this.y - mouseY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            const force = (120 - dist) / 120;
+            this.x += dx * force * 0.02;
+            this.y += dy * force * 0.02;
+          }
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(124, 58, 237, ${this.opacity})`;
+          ctx.fill();
+        }
+      }
+
+      const count = Math.min(80, (canvas.width * canvas.height) / 12000);
+      for (let i = 0; i < count; i++) {
+        particles.push(new Particle());
+      }
+
+      function connectParticles() {
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(124, 58, 237, ${0.05 * (1 - dist / 150)})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        connectParticles();
+        requestAnimationFrame(animate);
+      }
+      animate();
+
+      document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      });
+      document.addEventListener('touchmove', (e) => {
+        mouseX = e.touches[0].clientX;
+        mouseY = e.touches[0].clientY;
+      });
+
+      window.addEventListener('resize', () => {
+        particles = [];
+        const count = Math.min(80, (canvas.width * canvas.height) / 12000);
+        for (let i = 0; i < count; i++) particles.push(new Particle());
+      });
+    })();
+
+    // ===== Scroll Reveal =====
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // ===== Navbar Scroll Effect =====
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        navbar.classList.add('glass-strong');
+        navbar.classList.remove('bg-transparent');
+      } else {
+        navbar.classList.remove('glass-strong');
+        navbar.classList.add('bg-transparent');
+      }
+    });
+
+    // ===== Mobile Menu =====
+    const menuToggle = document.getElementById('menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    let menuOpen = false;
+
+    menuToggle.addEventListener('click', () => {
+      menuOpen = !menuOpen;
+      if (menuOpen) {
+        mobileMenu.classList.add('mobile-menu-open');
+      } else {
+        mobileMenu.classList.remove('mobile-menu-open');
+      }
+    });
+
+    function closeMenu() {
+      menuOpen = false;
+      mobileMenu.classList.remove('mobile-menu-open');
+    }
+
+    // ===== Smooth Anchor Scroll =====
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href === '#') return;
+        e.preventDefault();
+        const target = document.querySelector(href);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // ===== Navbar Active Link =====
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const top = section.offsetTop - 200;
+        if (window.scrollY >= top) {
+          current = section.getAttribute('id');
+        }
+      });
+      navLinks.forEach(link => {
+        const href = link.getAttribute('href').substring(1);
+        if (href === current) {
+          link.style.color = '#fff';
+        } else {
+          link.style.color = '';
+        }
+      });
+    });
+  </script>
 </body>
 </html>
