@@ -1,0 +1,36 @@
+# Dependencies
+app/node_modules/
+app/src-tauri/target/
+website/node_modules/
+website/.next/
+
+# Build
+app/src-tauri/target/
+app/dist/
+website/out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Logs
+*.log
+npm-debug.log*
+
+# Rust
+app/src-tauri/target/
+
+# Generated
+*.svg
