@@ -34,3 +34,6 @@ app/src-tauri/target/
 
 # Generated
 *.svg
+
+# Build artifacts (tracked in releases)
+dist/

@@ -128,32 +128,31 @@ pub fn run() {
             {
                 use tauri::tray::{TrayIconBuilder, MouseButton, MouseButtonState};
 
-                let icon_bytes = include_bytes!("../icons/icon.png");
-                let img = image::load_from_memory(icon_bytes)
-                    .expect("Failed to decode icon PNG")
-                    .into_rgba8();
-                let (w, h) = img.dimensions();
-                let icon = tauri::image::Image::new_owned(img.into_raw(), w, h);
-
-                let _tray = TrayIconBuilder::new()
-                    .icon(icon)
-                    .tooltip("CogniFlow")
-                    .on_tray_icon_event(|tray, event| {
-                        if let tauri::tray::TrayIconEvent::Click {
-                            button: MouseButton::Left,
-                            button_state: MouseButtonState::Up,
-                            ..
-                        } = event
-                        {
-                            let app = tray.app_handle();
-                            if let Some(window) = app.get_webview_window("main") {
-                                let _ = window.show();
-                                let _ = window.set_focus();
-                            }
-                        }
-                    })
-                    .build(app)
-                    .expect("Failed to build tray icon");
+                match tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png")) {
+                    Ok(icon) => {
+                        let _ = TrayIconBuilder::new()
+                            .icon(icon)
+                            .tooltip("CogniFlow")
+                            .on_tray_icon_event(|tray, event| {
+                                if let tauri::tray::TrayIconEvent::Click {
+                                    button: MouseButton::Left,
+                                    button_state: MouseButtonState::Up,
+                                    ..
+                                } = event
+                                {
+                                    let app = tray.app_handle();
+                                    if let Some(window) = app.get_webview_window("main") {
+                                        let _ = window.show();
+                                        let _ = window.set_focus();
+                                    }
+                                }
+                            })
+                            .build(app);
+                    }
+                    Err(e) => {
+                        eprintln!("Failed to load tray icon: {}", e);
+                    }
+                }
             }
             Ok(())
         })
