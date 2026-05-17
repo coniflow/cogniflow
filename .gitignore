@@ -37,3 +37,6 @@ app/src-tauri/target/
 
 # Build artifacts (tracked in releases)
 dist/
+
+# Website download artifacts (tracked in releases)
+website/downloads/

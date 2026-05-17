@@ -3,19 +3,20 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { useFocusStore } from "@/stores/focusStore";
+import { useAppStore } from "@/stores/appStore";
+import { formatDate } from "@/lib/utils";
 import {
   Timer,
   Play,
   Pause,
   RotateCcw,
   Music,
-  Volume2,
-  VolumeX,
   Coffee,
   Zap,
   Brain,
+  BarChart3,
+  CheckCircle2,
 } from "lucide-react";
 
 const ambientSounds = [
@@ -34,23 +35,51 @@ export function FocusMode() {
     currentSession,
     isFocusMode,
     ambientSound,
+    totalToday,
+    sessions,
     setTimerState,
     setTimeRemaining,
     setCurrentSession,
     setIsFocusMode,
     setAmbientSound,
+    completeSession,
+    loadSessions,
   } = useFocusStore();
 
+  const { settings } = useAppStore();
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const focusDuration = settings.focusDuration || 25;
+
+  useEffect(() => {
+    loadSessions();
+  }, []);
 
   useEffect(() => {
     if (timerState === "running") {
       intervalRef.current = setInterval(() => {
-        setTimeRemaining(Math.max(0, timeRemaining - 1));
+        const remaining = useFocusStore.getState().timeRemaining;
+        if (remaining <= 1) {
+          clearInterval(intervalRef.current);
+          setTimerState("completed");
+          completeSession();
+          playNotification();
+        } else {
+          setTimeRemaining(remaining - 1);
+        }
       }, 1000);
     }
     return () => clearInterval(intervalRef.current);
-  }, [timerState, timeRemaining, setTimeRemaining]);
+  }, [timerState]);
+
+  const playNotification = () => {
+    try {
+      const audio = new Audio(
+        "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+AgH9/f3+AgH9/f3+AgH9/f3+AgH9/f3+AgH9/f3+AgICA"
+      );
+      audio.volume = 0.3;
+      audio.play();
+    } catch {}
+  };
 
   const minutes = Math.floor(timeRemaining / 60);
   const seconds = timeRemaining % 60;
@@ -58,17 +87,20 @@ export function FocusMode() {
   const toggleTimer = () => {
     if (timerState === "idle" || timerState === "paused") {
       setTimerState("running");
-    } else {
+    } else if (timerState === "running") {
       setTimerState("paused");
+    } else {
+      setTimerState("idle");
+      setTimeRemaining(focusDuration * 60);
     }
   };
 
   const resetTimer = () => {
     setTimerState("idle");
-    setTimeRemaining(25 * 60);
+    setTimeRemaining(focusDuration * 60);
   };
 
-  const progress = 1 - timeRemaining / (25 * 60);
+  const progress = 1 - timeRemaining / (focusDuration * 60);
 
   return (
     <div className="p-6 space-y-8 overflow-y-auto h-full">
@@ -90,9 +122,7 @@ export function FocusMode() {
           transition={{ delay: 0.1 }}
         >
           <Card className="relative overflow-hidden">
-            <div
-              className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-cyan-500/5"
-            />
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-cyan-500/5" />
             <CardContent className="p-8 relative">
               <div className="flex flex-col items-center">
                 <div className="relative mb-6">
@@ -113,7 +143,7 @@ export function FocusMode() {
                       stroke="url(#gradient)"
                       strokeWidth="4"
                       strokeLinecap="round"
-                      strokeDasharray={`${progress * 283} 283`}
+                      strokeDasharray={`${Math.max(0, progress * 283)} 283`}
                       className="transition-all duration-1000"
                     />
                     <defs>
@@ -135,6 +165,17 @@ export function FocusMode() {
                   </div>
                 </div>
 
+                {timerState === "completed" && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="mb-4 flex items-center gap-2 text-green-400"
+                  >
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span className="text-sm font-medium">Session Complete!</span>
+                  </motion.div>
+                )}
+
                 <div className="flex gap-3">
                   <Button
                     variant="gradient"
@@ -144,6 +185,8 @@ export function FocusMode() {
                   >
                     {timerState === "running" ? (
                       <><Pause className="w-4 h-4 mr-2" /> Pause</>
+                    ) : timerState === "completed" ? (
+                      <><RotateCcw className="w-4 h-4 mr-2" /> Again</>
                     ) : (
                       <><Play className="w-4 h-4 mr-2" /> Start</>
                     )}
@@ -151,6 +194,23 @@ export function FocusMode() {
                   <Button variant="outline" size="icon" onClick={resetTimer}>
                     <RotateCcw className="w-4 h-4" />
                   </Button>
+                </div>
+
+                <div className="mt-4 flex gap-4 text-center">
+                  <div>
+                    <p className="text-lg font-bold text-primary">{totalToday}</p>
+                    <p className="text-[10px] text-muted-foreground">Today</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-cyan-400">{sessions.length}</p>
+                    <p className="text-[10px] text-muted-foreground">Total</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-green-400">
+                      {Math.floor(sessions.reduce((sum, s) => sum + s.duration, 0) / 60)}m
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">Tracked</p>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -200,8 +260,17 @@ export function FocusMode() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start" size="sm">
-                <Coffee className="w-4 h-4 mr-2" /> Take a break
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                size="sm"
+                onClick={() => {
+                  const breakDuration = (settings.shortBreakDuration || 5) * 60;
+                  setTimeRemaining(breakDuration);
+                  setTimerState("idle");
+                }}
+              >
+                <Coffee className="w-4 h-4 mr-2" /> Take a break (5m)
               </Button>
               <Button
                 variant={isFocusMode ? "secondary" : "outline"}
@@ -210,10 +279,33 @@ export function FocusMode() {
                 onClick={() => setIsFocusMode(!isFocusMode)}
               >
                 <Brain className="w-4 h-4 mr-2" />
-                {isFocusMode ? "Disable" : "Enable"} Website Blocker
+                {isFocusMode ? "Disable" : "Enable"} Focus Mode
               </Button>
             </CardContent>
           </Card>
+
+          {sessions.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-primary" />
+                  Recent Sessions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {sessions.slice(0, 10).map((s) => (
+                    <div key={s.id} className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">{formatDate(s.started_at)}</span>
+                      <Badge variant="outline" className="text-[10px]">
+                        {Math.floor(s.duration / 60)}m
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </motion.div>
       </div>
     </div>

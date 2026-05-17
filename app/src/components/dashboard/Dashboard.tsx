@@ -1,7 +1,11 @@
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { useNoteStore } from "@/stores/noteStore";
+import { useFocusStore } from "@/stores/focusStore";
+import { formatDate } from "@/lib/utils";
 import {
   Brain,
   TrendingUp,
@@ -11,46 +15,32 @@ import {
   Clock,
   Sparkles,
   BookOpen,
+  Plus,
+  FileText,
+  Timer,
 } from "lucide-react";
 
-const insights = [
-  {
-    id: "1",
-    type: "stats",
-    title: "Weekly Activity",
-    description: "47 thoughts captured this week, 23% more than last week",
-    icon: BarChart3,
-  },
-  {
-    id: "2",
-    type: "trend",
-    title: "Emerging Theme",
-    description: 'Your notes about "machine learning" are growing. Consider exploring this deeper.',
-    icon: TrendingUp,
-  },
-  {
-    id: "3",
-    type: "connection",
-    title: "New Connection Found",
-    description: '"Project Alpha" is connected to "Team sync" — 3 overlapping concepts detected.',
-    icon: Link2,
-  },
-  {
-    id: "4",
-    type: "suggestion",
-    title: "AI Suggestion",
-    description: "Based on your recent notes, you might enjoy reading about systems thinking.",
-    icon: Lightbulb,
-  },
-];
+interface DashboardProps {
+  onNewNote: () => void;
+}
 
-const recentNotes = [
-  { id: "1", title: "Project Alpha Ideas", tags: ["work", "ideas"], time: "2h ago" },
-  { id: "2", title: "Book: Thinking in Systems", tags: ["reading", "learning"], time: "5h ago" },
-  { id: "3", title: "Meeting Notes - Product Review", tags: ["work", "meeting"], time: "1d ago" },
-];
+export function Dashboard({ onNewNote }: DashboardProps) {
+  const { totalNotes, weeklyNotes, totalConnections, recentNotes } = useNoteStore();
+  const { currentSession } = useFocusStore();
 
-export function Dashboard() {
+  const stats = useMemo(
+    () => [
+      { label: "Total Notes", value: totalNotes().toString(), icon: BookOpen, color: "text-purple-400" },
+      { label: "Connections", value: totalConnections().toString(), icon: Link2, color: "text-cyan-400" },
+      { label: "Focus Sessions", value: currentSession.toString(), icon: Timer, color: "text-green-400" },
+      { label: "This Week", value: weeklyNotes().toString(), icon: BarChart3, color: "text-yellow-400" },
+    ],
+    [totalNotes(), weeklyNotes(), totalConnections(), currentSession]
+  );
+
+  const recents = recentNotes(5);
+  const hasNotes = totalNotes() > 0;
+
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -64,13 +54,6 @@ export function Dashboard() {
     show: { opacity: 1, y: 0 },
   };
 
-  const stats = [
-    { label: "Total Notes", value: "342", icon: BookOpen, color: "text-purple-400" },
-    { label: "Connections", value: "1,247", icon: Link2, color: "text-cyan-400" },
-    { label: "Focus Hours", value: "89", icon: Clock, color: "text-green-400" },
-    { label: "AI Insights", value: "56", icon: Sparkles, color: "text-yellow-400" },
-  ];
-
   return (
     <div className="p-6 space-y-8 overflow-y-auto h-full">
       <motion.div
@@ -78,9 +61,14 @@ export function Dashboard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex items-center gap-3 mb-1">
-          <Brain className="w-6 h-6 text-primary" />
-          <h1 className="text-2xl font-bold">Daily Dashboard</h1>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-3">
+            <Brain className="w-6 h-6 text-primary" />
+            <h1 className="text-2xl font-bold">Daily Dashboard</h1>
+          </div>
+          <Button variant="gradient" size="sm" onClick={onNewNote}>
+            <Plus className="w-4 h-4 mr-1" /> New Note
+          </Button>
         </div>
         <p className="text-muted-foreground">Your second brain, summarized.</p>
       </motion.div>
@@ -121,20 +109,53 @@ export function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {insights.map((insight) => (
-                <div
-                  key={insight.id}
-                  className="flex gap-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer"
-                >
-                  <div className="mt-0.5">
-                    <insight.icon className="w-4 h-4 text-primary" />
+              {hasNotes ? (
+                <>
+                  <div className="flex gap-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer">
+                    <div className="mt-0.5">
+                      <TrendingUp className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Weekly Activity</p>
+                      <p className="text-xs text-muted-foreground">
+                        {weeklyNotes()} thoughts captured this week
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">{insight.title}</p>
-                    <p className="text-xs text-muted-foreground">{insight.description}</p>
+                  <div className="flex gap-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer">
+                    <div className="mt-0.5">
+                      <Link2 className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Knowledge Connections</p>
+                      <p className="text-xs text-muted-foreground">
+                        {totalConnections()} connections mapped across your notes
+                      </p>
+                    </div>
                   </div>
+                  <div className="flex gap-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer">
+                    <div className="mt-0.5">
+                      <Lightbulb className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">AI Suggestion</p>
+                      <p className="text-xs text-muted-foreground">
+                        Connect to Ollama for AI-powered tagging and summarization
+                      </p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <Sparkles className="w-8 h-8 mx-auto mb-2 text-muted-foreground/30" />
+                  <p className="text-sm text-muted-foreground">
+                    Start capturing to see insights here
+                  </p>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={onNewNote}>
+                    <Plus className="w-4 h-4 mr-1" /> Create your first note
+                  </Button>
                 </div>
-              ))}
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -148,26 +169,37 @@ export function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {recentNotes.map((note) => (
-                  <div
-                    key={note.id}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">{note.title}</p>
-                      <div className="flex gap-1.5 mt-1">
-                        {note.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0">
-                            {tag}
-                          </Badge>
-                        ))}
+              {hasNotes ? (
+                <div className="space-y-3">
+                  {recents.map((note) => (
+                    <div
+                      key={note.id}
+                      className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{note.title}</p>
+                        <div className="flex gap-1.5 mt-1">
+                          {note.tags.slice(0, 3).map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
+                      <span className="text-xs text-muted-foreground shrink-0 ml-2">
+                        {formatDate(note.created_at)}
+                      </span>
                     </div>
-                    <span className="text-xs text-muted-foreground">{note.time}</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <FileText className="w-8 h-8 mx-auto mb-2 text-muted-foreground/30" />
+                  <p className="text-sm text-muted-foreground">
+                    No notes yet. Start capturing your thoughts!
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -182,9 +214,35 @@ export function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-48 rounded-lg bg-gradient-to-br from-purple-500/5 to-cyan-500/5 border border-border/50 flex items-center justify-center">
-              <p className="text-sm text-muted-foreground">Activity chart loading...</p>
-            </div>
+            {hasNotes ? (
+              <div className="space-y-3">
+                {Array.from(new Set(useNoteStore.getState().notes.flatMap((n) => n.tags))).slice(0, 8).map((tag) => {
+                  const count = useNoteStore.getState().notes.filter((n) => n.tags.includes(tag)).length;
+                  const maxCount = Math.max(
+                    1,
+                    ...Array.from(new Set(useNoteStore.getState().notes.flatMap((n) => n.tags))).map((t) =>
+                      useNoteStore.getState().notes.filter((n) => n.tags.includes(t)).length
+                    )
+                  );
+                  return (
+                    <div key={tag} className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground w-24 truncate">{tag}</span>
+                      <div className="flex-1 h-2 rounded-full bg-secondary/30 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 transition-all"
+                          style={{ width: `${(count / maxCount) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-muted-foreground">{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="h-32 rounded-lg bg-gradient-to-br from-purple-500/5 to-cyan-500/5 border border-border/50 flex items-center justify-center">
+                <p className="text-sm text-muted-foreground">Add notes to see your thinking patterns</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>

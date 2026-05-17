@@ -4,17 +4,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { useNoteStore } from "@/stores/noteStore";
 import { formatDate, truncate } from "@/lib/utils";
-import { Search, FileText, Plus, Trash2, ChevronRight } from "lucide-react";
+import { Search, FileText, Plus, Trash2, Grid3X3, List } from "lucide-react";
 import type { Note } from "@/types";
 
 interface NotesListProps {
   onSelectNote: (note: Note) => void;
+  onCreateNote: () => void;
 }
 
-export function NotesList({ onSelectNote }: NotesListProps) {
+export function NotesList({ onSelectNote, onCreateNote }: NotesListProps) {
   const { notes, searchQuery, setSearchQuery, removeNote } = useNoteStore();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
@@ -22,7 +22,8 @@ export function NotesList({ onSelectNote }: NotesListProps) {
     (n) =>
       n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       n.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      n.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()))
+      n.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      n.entities.some((e) => e.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -32,9 +33,27 @@ export function NotesList({ onSelectNote }: NotesListProps) {
           <h1 className="text-2xl font-bold">Notes</h1>
           <p className="text-sm text-muted-foreground">{notes.length} total thoughts</p>
         </div>
-        <Button variant="gradient" size="sm">
-          <Plus className="w-4 h-4 mr-1" /> New Note
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`w-8 h-8 ${viewMode === "list" ? "bg-secondary" : ""}`}
+            onClick={() => setViewMode("list")}
+          >
+            <List className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`w-8 h-8 ${viewMode === "grid" ? "bg-secondary" : ""}`}
+            onClick={() => setViewMode("grid")}
+          >
+            <Grid3X3 className="w-4 h-4" />
+          </Button>
+          <Button variant="gradient" size="sm" onClick={onCreateNote}>
+            <Plus className="w-4 h-4 mr-1" /> New Note
+          </Button>
+        </div>
       </div>
 
       <div className="relative">
@@ -52,6 +71,9 @@ export function NotesList({ onSelectNote }: NotesListProps) {
           <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
             <FileText className="w-12 h-12 mb-3 opacity-30" />
             <p className="text-sm">No notes yet. Start capturing your thoughts!</p>
+            <Button variant="outline" size="sm" className="mt-3" onClick={onCreateNote}>
+              <Plus className="w-4 h-4 mr-1" /> Create Note
+            </Button>
           </div>
         ) : (
           <motion.div
@@ -102,6 +124,11 @@ export function NotesList({ onSelectNote }: NotesListProps) {
                         {formatDate(note.created_at)}
                       </span>
                     </div>
+                    {note.summary && (
+                      <p className="text-[10px] text-primary/70 mt-2 italic line-clamp-1">
+                        {note.summary}
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>

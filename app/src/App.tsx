@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CaptureWindow } from "@/components/layout/CaptureWindow";
 import { SettingsPanel } from "@/components/layout/SettingsPanel";
+import { NoteEditor } from "@/components/notes/NoteEditor";
 import { Dashboard } from "@/components/dashboard/Dashboard";
 import { NotesList } from "@/components/notes/NotesList";
 import { KnowledgeGraph } from "@/components/graph/KnowledgeGraph";
@@ -10,8 +11,10 @@ import { FocusMode } from "@/components/focus/FocusMode";
 import { SearchBar } from "@/components/search/SearchBar";
 import { useNoteStore } from "@/stores/noteStore";
 import { useAppStore } from "@/stores/appStore";
+import { useFocusStore } from "@/stores/focusStore";
 import type { Note } from "@/types";
 import { generateId } from "@/lib/utils";
+import { invoke } from "@tauri-apps/api/core";
 import { Brain } from "lucide-react";
 
 type ViewType = "dashboard" | "notes" | "search" | "focus" | "graph";
@@ -19,79 +22,99 @@ type ViewType = "dashboard" | "notes" | "search" | "focus" | "graph";
 export default function App() {
   const [activeView, setActiveView] = useState<ViewType>("dashboard");
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
   const { setCaptureOpen } = useAppStore();
-  const { addNote } = useNoteStore();
+  const { addNote, loadNotes, loaded } = useNoteStore();
+  const { setTimeRemaining, setTimerState } = useFocusStore();
 
   useEffect(() => {
-    const seedDemoNotes = () => {
-      const demo: Note[] = [
-        {
-          id: generateId(),
-          title: "Project Alpha - Architecture Ideas",
-          content: "Thinking about using a microservices architecture with event sourcing for Project Alpha. The main challenge will be handling eventual consistency across services. Need to research more about Saga patterns and how they handle rollbacks.",
-          tags: ["work", "architecture", "microservices"],
-          entities: ["Project Alpha", "Saga Pattern"],
-          connections: ["System Design", "Distributed Systems"],
-          summary: "Exploring microservices architecture for Project Alpha",
-          source: "text",
-          created_at: new Date(Date.now() - 7200000).toISOString(),
-          updated_at: new Date(Date.now() - 7200000).toISOString(),
-        },
-        {
-          id: generateId(),
-          title: "Book Notes: Thinking in Systems",
-          content: "Key insight: Systems thinking is about understanding the interconnections rather than linear cause-effect. Leverage points are places to intervene in a system. The most effective leverage points are often the least obvious.",
-          tags: ["reading", "systems", "learning"],
-          entities: ["Donella Meadows", "Systems Thinking"],
-          connections: ["Product Strategy", "Machine Learning"],
-          summary: "Notes on systems thinking and leverage points",
-          source: "text",
-          created_at: new Date(Date.now() - 18000000).toISOString(),
-          updated_at: new Date(Date.now() - 18000000).toISOString(),
-        },
-        {
-          id: generateId(),
-          title: "Meeting Notes - Product Review",
-          content: "Quarterly product review discussed: User engagement up 15%, but retention dipped in the onboarding flow. Action items: Revamp onboarding wizard, add progress indicators, and implement early user feedback loop.",
-          tags: ["work", "meeting", "product"],
-          entities: ["Product Review"],
-          connections: ["User Experience", "Product Strategy"],
-          summary: "Q3 product review meeting notes",
-          source: "text",
-          created_at: new Date(Date.now() - 86400000).toISOString(),
-          updated_at: new Date(Date.now() - 86400000).toISOString(),
-        },
-      ];
-      demo.forEach((note) => addNote(note));
-    };
+    loadNotes();
+    loadSettings();
+  }, []);
 
-    if (useNoteStore.getState().notes.length === 0) {
-      seedDemoNotes();
+  useEffect(() => {
+    if (loaded && useNoteStore.getState().notes.length === 0) {
+      seedWelcomeNote();
     }
-  }, [addNote]);
+  }, [loaded]);
 
-  const handleCaptureSave = (content: string) => {
+  const loadSettings = async () => {
+    try {
+      const { load } = await import("@tauri-apps/plugin-store");
+      const store = await load("settings.json");
+      const saved = await store.get<any>("settings");
+      if (saved) {
+        useAppStore.getState().updateSettings(saved);
+        if (saved.focusDuration) {
+          setTimeRemaining(saved.focusDuration * 60);
+        }
+      }
+    } catch (e) {
+      console.log("Settings not found, using defaults");
+    }
+  };
+
+  const seedWelcomeNote = async () => {
     const note: Note = {
       id: generateId(),
-      title: content.slice(0, 60) + (content.length > 60 ? "..." : ""),
-      content,
-      tags: [],
-      entities: [],
-      connections: [],
-      summary: "",
+      title: "Welcome to CogniFlow!",
+      content:
+        "This is your first note. CogniFlow is your private AI second brain.\n\nTry these features:\n- Capture thoughts with Ctrl+Shift+C\n- Connect ideas in the Knowledge Graph\n- Focus with the Pomodoro timer\n- Search across all your notes\n\nYour data stays on your machine - private by default.",
+      tags: ["welcome", "getting-started"],
+      entities: ["CogniFlow"],
+      connections: ["Productivity", "Knowledge Management"],
+      summary: "Welcome note with feature overview",
       source: "text",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
-    addNote(note);
+    await addNote(note);
+  };
+
+  const handleCaptureSave = async (content: string, aiProcessed?: { summary: string; tags: string[]; entities: string[]; connections: string[] }) => {
+    const now = new Date().toISOString();
+    const note: Note = {
+      id: generateId(),
+      title: content.slice(0, 60) + (content.length > 60 ? "..." : ""),
+      content,
+      tags: aiProcessed?.tags || [],
+      entities: aiProcessed?.entities || [],
+      connections: aiProcessed?.connections || [],
+      summary: aiProcessed?.summary || "",
+      source: "text",
+      created_at: now,
+      updated_at: now,
+    };
+    await addNote(note);
+  };
+
+  const handleNoteClick = (note: Note) => {
+    setEditingNote(note);
+    setEditorOpen(true);
+  };
+
+  const handleCreateNote = () => {
+    setEditingNote(null);
+    setEditorOpen(true);
+  };
+
+  const handleSaveNote = async (note: Note) => {
+    if (editingNote) {
+      await useNoteStore.getState().updateNote(note.id, note);
+    } else {
+      await addNote(note);
+    }
+    setEditorOpen(false);
+    setEditingNote(null);
   };
 
   const renderView = () => {
     switch (activeView) {
       case "dashboard":
-        return <Dashboard />;
+        return <Dashboard onNewNote={handleCreateNote} />;
       case "notes":
-        return <NotesList onSelectNote={setSelectedNote} />;
+        return <NotesList onSelectNote={handleNoteClick} onCreateNote={handleCreateNote} />;
       case "search":
         return (
           <div className="p-6 space-y-6">
@@ -102,7 +125,7 @@ export default function App() {
             <p className="text-muted-foreground mb-4">Semantic search across your second brain.</p>
             <SearchBar />
             <div className="mt-6">
-              <NotesList onSelectNote={setSelectedNote} />
+              <NotesList onSelectNote={handleNoteClick} onCreateNote={handleCreateNote} />
             </div>
           </div>
         );
@@ -111,7 +134,7 @@ export default function App() {
       case "graph":
         return <KnowledgeGraph />;
       default:
-        return <Dashboard />;
+        return <Dashboard onNewNote={handleCreateNote} />;
     }
   };
 
@@ -136,6 +159,12 @@ export default function App() {
 
       <CaptureWindow onSave={handleCaptureSave} />
       <SettingsPanel />
+      <NoteEditor
+        note={editingNote}
+        open={editorOpen}
+        onClose={() => { setEditorOpen(false); setEditingNote(null); }}
+        onSave={handleSaveNote}
+      />
     </div>
   );
 }

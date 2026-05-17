@@ -27,7 +27,21 @@ const defaultSettings: AppSettings = {
   language: "en",
 };
 
-export const useAppStore = create<AppStore>((set) => ({
+let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+
+async function persistSettings(settings: AppSettings) {
+  try {
+    const { load } = await import("@tauri-apps/plugin-store");
+    const store = await load("settings.json");
+    await store.set("settings", settings);
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => store.save(), 500);
+  } catch (e) {
+    console.log("Settings persistence not available:", e);
+  }
+}
+
+export const useAppStore = create<AppStore>((set, get) => ({
   sidebarOpen: true,
   captureOpen: false,
   settingsOpen: false,
@@ -36,8 +50,9 @@ export const useAppStore = create<AppStore>((set) => ({
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   setCaptureOpen: (open) => set({ captureOpen: open }),
   setSettingsOpen: (open) => set({ settingsOpen: open }),
-  updateSettings: (data) =>
-    set((state) => ({
-      settings: { ...state.settings, ...data },
-    })),
+  updateSettings: (data) => {
+    const newSettings = { ...get().settings, ...data };
+    set({ settings: newSettings });
+    persistSettings(newSettings);
+  },
 }));
